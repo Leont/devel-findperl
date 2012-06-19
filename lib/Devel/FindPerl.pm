@@ -14,6 +14,7 @@ sub find_perl_interpreter {
 	my $config = shift || ExtUtils::Config->new;
 
 	my $perl          = $^X;
+	return VMS::Filespec::vmsify($perl) if $^O eq 'VMS';
 	my $perl_basename = File::Basename::basename($perl);
 
 	my @potential_perls;
