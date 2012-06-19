@@ -2,4 +2,90 @@ package Devel::FindPerl;
 use strict;
 use warnings;
 
+use Exporter 5.57 'import';
+our @EXPORT_OK = qw/find_perl_interpreter/;
+
+use Capture::Tiny 'capture';
+use Cwd;
+use ExtUtils::Config;
+use File::Spec;
+
+sub find_perl_interpreter {
+	my $config = shift || ExtUtils::Config->new;
+
+	my $perl          = $^X;
+	my $perl_basename = File::Basename::basename($perl);
+
+	my @potential_perls;
+
+	# Try 1, Check $^X for absolute path
+	push @potential_perls, $perl if File::Spec->file_name_is_absolute($perl);
+
+	# Try 2, Check $^X for a valid relative path
+	my $abs_perl = File::Spec->rel2abs($perl);
+	push @potential_perls, $abs_perl;
+
+	# Try 3, Last ditch effort: These two option use hackery to try to locate
+	# a suitable perl. The hack varies depending on whether we are running
+	# from an installed perl or an uninstalled perl in the perl source dist.
+	if ($ENV{PERL_CORE}) {
+		# Try 3.A, If we are in a perl source tree, running an uninstalled
+		# perl, we can keep moving up the directory tree until we find our
+		# binary. We wouldn't do this under any other circumstances.
+
+		# CBuilder is also in the core, so it should be available here
+		require ExtUtils::CBuilder;
+		my $perl_src = Cwd::realpath(ExtUtils::CBuilder->perl_src);
+		if (defined($perl_src) && length($perl_src)) {
+			my $uninstperl = File::Spec->rel2abs(File::Spec->catfile($perl_src, $perl_basename));
+			push @potential_perls, $uninstperl;
+		}
+
+	}
+	else {
+		# Try 3.B, First look in $Config{perlpath}, then search the user's
+		# PATH. We do not want to do either if we are running from an
+		# uninstalled perl in a perl source tree.
+
+		push @potential_perls, $config->get('perlpath');
+		push @potential_perls, map { File::Spec->catfile($_, $perl_basename) } File::Spec->path();
+	}
+
+	# Now that we've enumerated the potential perls, it's time to test
+	# them to see if any of them match our configuration, returning the
+	# absolute path of the first successful match.
+	my $exe = $config->get('exe_ext');
+	foreach my $thisperl (@potential_perls) {
+		$thisperl .= $exe if length $exe and $thisperl !~ m/$exe$/i;
+		return $thisperl if -f $thisperl && _perl_is_same($thisperl);
+	}
+
+	# We've tried all alternatives, and didn't find a perl that matches
+	# our configuration. Throw an exception, and list alternatives we tried.
+	my @paths = map File::Basename::dirname($_), @potential_perls;
+	die "Can't locate the perl binary used to run this script in (@paths)\n";
+}
+
+sub _perl_is_same {
+	my $perl = shift;
+
+	my @cmd = ($perl);
+
+	# When run from the perl core, @INC will include the directories
+	# where perl is yet to be installed. We need to reference the
+	# absolute path within the source distribution where it can find
+	# it's Config.pm This also prevents us from picking up a Config.pm
+	# from a different configuration that happens to be already
+	# installed in @INC.
+	if ($ENV{PERL_CORE}) {
+		push @cmd, '-I' . File::Spec->catdir(File::Basename::dirname($perl), 'lib');
+	}
+
+	push @cmd, qw(-MConfig=myconfig -e print -e myconfig);
+	return capture { system @cmd } eq Config->myconfig;
+}
+
 1;
+
+#ABSTRACT: Find the path to your perl
+
