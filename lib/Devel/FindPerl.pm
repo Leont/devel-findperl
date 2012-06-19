@@ -6,6 +6,7 @@ use Exporter 5.57 'import';
 our @EXPORT_OK = qw/find_perl_interpreter/;
 
 use Capture::Tiny 'capture';
+use Carp;
 use Cwd;
 use ExtUtils::Config;
 use File::Spec;
@@ -34,9 +35,7 @@ sub find_perl_interpreter {
 		# perl, we can keep moving up the directory tree until we find our
 		# binary. We wouldn't do this under any other circumstances.
 
-		# CBuilder is also in the core, so it should be available here
-		require ExtUtils::CBuilder;
-		my $perl_src = Cwd::realpath(ExtUtils::CBuilder->perl_src);
+		my $perl_src = Cwd::realpath(_perl_src());
 		if (defined($perl_src) && length($perl_src)) {
 			my $uninstperl = File::Spec->rel2abs(File::Spec->catfile($perl_src, $perl_basename));
 			push @potential_perls, $uninstperl;
@@ -65,6 +64,35 @@ sub find_perl_interpreter {
 	# our configuration. Throw an exception, and list alternatives we tried.
 	my @paths = map File::Basename::dirname($_), @potential_perls;
 	die "Can't locate the perl binary used to run this script in (@paths)\n";
+}
+
+# if building perl, perl's main source directory
+sub _perl_src {
+	# N.B. makemaker actually searches regardless of PERL_CORE, but
+	# only squawks at not finding it if PERL_CORE is set
+
+	return unless $ENV{PERL_CORE};
+
+	my $Updir = File::Spec->updir;
+	my $dir	 = File::Spec->curdir;
+
+	# Try up to 10 levels upwards
+	for (0..10) {
+		if (
+			-f File::Spec->catfile($dir,"config_h.SH")
+			&&
+			-f File::Spec->catfile($dir,"perl.h")
+			&&
+			-f File::Spec->catfile($dir,"lib","Exporter.pm")
+		) {
+			return Cwd::realpath( $dir );
+		}
+
+		$dir = File::Spec->catdir($dir, $Updir);
+	}
+
+	carp "PERL_CORE is set but I can't find your perl source!\n";
+	return; # return empty string if $ENV{PERL_CORE} but can't find dir ???
 }
 
 sub _perl_is_same {
