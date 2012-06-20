@@ -118,3 +118,11 @@ sub _perl_is_same {
 
 #ABSTRACT: Find the path to your perl
 
+=head1 DESCRIPTION
+
+This module tries to find the path to the currently running perl.
+
+=func find_perl_interpreter
+
+This function will try really really hard to find the path to the perl running your program. I should be able to find it in most circumstances. Do note that the result of this function is not cached, as it might be invalidated by for example a change of directory.
+
