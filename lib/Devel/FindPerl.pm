@@ -5,7 +5,6 @@ use warnings;
 use Exporter 5.57 'import';
 our @EXPORT_OK = qw/find_perl_interpreter/;
 
-use Capture::Tiny 'capture';
 use Carp;
 use Cwd;
 use ExtUtils::Config;
@@ -73,7 +72,7 @@ sub _perl_src {
 
 	return unless $ENV{PERL_CORE};
 
-	my $Updir = File::Spec->updir;
+	my $updir = File::Spec->updir;
 	my $dir	 = File::Spec->curdir;
 
 	# Try up to 10 levels upwards
@@ -88,7 +87,7 @@ sub _perl_src {
 			return Cwd::realpath( $dir );
 		}
 
-		$dir = File::Spec->catdir($dir, $Updir);
+		$dir = File::Spec->catdir($dir, $updir);
 	}
 
 	carp "PERL_CORE is set but I can't find your perl source!\n";
@@ -98,7 +97,7 @@ sub _perl_src {
 sub _perl_is_same {
 	my $perl = shift;
 
-	my @cmd = ($perl);
+	my @cmd = $perl;
 
 	# When run from the perl core, @INC will include the directories
 	# where perl is yet to be installed. We need to reference the
@@ -106,12 +105,13 @@ sub _perl_is_same {
 	# it's Config.pm This also prevents us from picking up a Config.pm
 	# from a different configuration that happens to be already
 	# installed in @INC.
-	if ($ENV{PERL_CORE}) {
-		push @cmd, '-I' . File::Spec->catdir(File::Basename::dirname($perl), 'lib');
-	}
+	push @cmd, '-I' . File::Spec->catdir(File::Basename::dirname($perl), 'lib') if $ENV{PERL_CORE};
 
 	push @cmd, qw(-MConfig=myconfig -e print -e myconfig);
-	return capture { system @cmd } eq Config->myconfig;
+	open my $fh, '-|', @cmd or return;
+	my $myconfig = join '', <$fh>;
+	close $fh or return;
+	return $myconfig eq Config->myconfig;
 }
 
 1;
