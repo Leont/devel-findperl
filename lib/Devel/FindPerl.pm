@@ -9,6 +9,7 @@ use Carp;
 use Cwd;
 use ExtUtils::Config;
 use File::Spec;
+use IPC::Open2;
 
 sub find_perl_interpreter {
 	my $config = shift || ExtUtils::Config->new;
@@ -106,12 +107,12 @@ sub _perl_is_same {
 	# from a different configuration that happens to be already
 	# installed in @INC.
 	push @cmd, '-I' . File::Spec->catdir(File::Basename::dirname($perl), 'lib') if $ENV{PERL_CORE};
-
 	push @cmd, qw(-MConfig=myconfig -e print -e myconfig);
-	open my $fh, '-|', @cmd or return;
-	my $myconfig = join '', <$fh>;
-	close $fh or return;
-	return $myconfig eq Config->myconfig;
+
+	my $pid = open2(my($in, $out), @cmd);
+	my $ret = do { local $/; <$in> };
+	waitpid $pid, 0;
+	return $ret eq Config->myconfig;
 }
 
 1;
