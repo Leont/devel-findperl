@@ -110,6 +110,7 @@ sub _perl_is_same {
 	push @cmd, qw(-MConfig=myconfig -e print -e myconfig);
 
 	my $pid = open2(my($in, $out), @cmd);
+	binmode $in, ':crlf' if $^O eq 'MSWin32';
 	my $ret = do { local $/; <$in> };
 	waitpid $pid, 0;
 	return $ret eq Config->myconfig;
