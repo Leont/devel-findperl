@@ -8,6 +8,7 @@ our @EXPORT_OK = qw/find_perl_interpreter/;
 use Carp;
 use Cwd;
 use ExtUtils::Config;
+use File::Basename;
 use File::Spec;
 use IPC::Open2;
 
