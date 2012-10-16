@@ -7,13 +7,20 @@ our @EXPORT_OK = qw/find_perl_interpreter/;
 
 use Carp;
 use Cwd;
-use ExtUtils::Config;
+use ExtUtils::Config 0.007;
 use File::Basename;
 use File::Spec;
 use IPC::Open2;
 
+my %perl_for;
 sub find_perl_interpreter {
 	my $config = shift || ExtUtils::Config->new;
+	my $key = $config->serialize;
+	return $perl_for{$key} ||= _discover_perl_interpreter($config);
+}
+
+sub _discover_perl_interpreter {
+	my $config = shift;
 
 	my $perl          = $^X;
 	return VMS::Filespec::vmsify($perl) if $^O eq 'VMS';
@@ -125,7 +132,7 @@ sub _perl_is_same {
 
 This module tries to find the path to the currently running perl.
 
-=func find_perl_interpreter
+=func find_perl_interpreter($config = ExtUtils::Config->new)
 
-This function will try really really hard to find the path to the perl running your program. I should be able to find it in most circumstances. Do note that the result of this function is not cached, as it might be invalidated by for example a change of directory.
+This function will try really really hard to find the path to the perl running your program. I should be able to find it in most circumstances. Note that the result of this function will be cached for any serialized value of C<$config>.
 
