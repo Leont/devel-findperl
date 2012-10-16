@@ -5,12 +5,12 @@ use warnings;
 use Exporter 5.57 'import';
 our @EXPORT_OK = qw/find_perl_interpreter/;
 
-use Carp;
-use Cwd;
+use Carp q/carp/;
+use Cwd q/realpath/;
 use ExtUtils::Config 0.007;
-use File::Basename;
-use File::Spec;
-use IPC::Open2;
+use File::Basename qw/basename dirname/;
+use File::Spec::Functions qw/catfile catdir rel2abs file_name_is_absolute updir curdir path/;
+use IPC::Open2 qw/open2/;
 
 my %perl_for;
 sub find_perl_interpreter {
@@ -24,12 +24,12 @@ sub _discover_perl_interpreter {
 
 	my $perl          = $^X;
 	return VMS::Filespec::vmsify($perl) if $^O eq 'VMS';
-	my $perl_basename = File::Basename::basename($perl);
+	my $perl_basename = basename($perl);
 
 	my @potential_perls;
 
 	# Try 1, Check $^X for absolute path
-	push @potential_perls, File::Spec->file_name_is_absolute($perl) ? $perl : File::Spec->rel2abs($perl);
+	push @potential_perls, file_name_is_absolute($perl) ? $perl : rel2abs($perl);
 
 	# Try 2, Last ditch effort: These two option use hackery to try to locate
 	# a suitable perl. The hack varies depending on whether we are running
@@ -39,9 +39,9 @@ sub _discover_perl_interpreter {
 		# perl, we can keep moving up the directory tree until we find our
 		# binary. We wouldn't do this under any other circumstances.
 
-		my $perl_src = Cwd::realpath(_perl_src());
+		my $perl_src = realpath(_perl_src());
 		if (defined($perl_src) && length($perl_src)) {
-			my $uninstperl = File::Spec->rel2abs(File::Spec->catfile($perl_src, $perl_basename));
+			my $uninstperl = rel2abs(catfile($perl_src, $perl_basename));
 			push @potential_perls, $uninstperl;
 		}
 
@@ -52,7 +52,7 @@ sub _discover_perl_interpreter {
 		# uninstalled perl in a perl source tree.
 
 		push @potential_perls, $config->get('perlpath');
-		push @potential_perls, map { File::Spec->catfile($_, $perl_basename) } File::Spec->path();
+		push @potential_perls, map { catfile($_, $perl_basename) } path();
 	}
 
 	# Now that we've enumerated the potential perls, it's time to test
@@ -66,7 +66,7 @@ sub _discover_perl_interpreter {
 
 	# We've tried all alternatives, and didn't find a perl that matches
 	# our configuration. Throw an exception, and list alternatives we tried.
-	my @paths = map File::Basename::dirname($_), @potential_perls;
+	my @paths = map { dirname($_) } @potential_perls;
 	die "Can't locate the perl binary used to run this script in (@paths)\n";
 }
 
@@ -77,22 +77,22 @@ sub _perl_src {
 
 	return unless $ENV{PERL_CORE};
 
-	my $updir = File::Spec->updir;
-	my $dir	 = File::Spec->curdir;
+	my $updir = updir;
+	my $dir	 = curdir;
 
 	# Try up to 10 levels upwards
 	for (0..10) {
 		if (
-			-f File::Spec->catfile($dir,"config_h.SH")
+			-f catfile($dir,"config_h.SH")
 			&&
-			-f File::Spec->catfile($dir,"perl.h")
+			-f catfile($dir,"perl.h")
 			&&
-			-f File::Spec->catfile($dir,"lib","Exporter.pm")
+			-f catfile($dir,"lib","Exporter.pm")
 		) {
-			return Cwd::realpath( $dir );
+			return realpath($dir);
 		}
 
-		$dir = File::Spec->catdir($dir, $updir);
+		$dir = catdir($dir, $updir);
 	}
 
 	carp "PERL_CORE is set but I can't find your perl source!\n";
@@ -110,7 +110,7 @@ sub _perl_is_same {
 	# it's Config.pm This also prevents us from picking up a Config.pm
 	# from a different configuration that happens to be already
 	# installed in @INC.
-	push @cmd, '-I' . File::Spec->catdir(File::Basename::dirname($perl), 'lib') if $ENV{PERL_CORE};
+	push @cmd, '-I' . catdir(dirname($perl), 'lib') if $ENV{PERL_CORE};
 	push @cmd, qw(-MConfig=myconfig -e print -e myconfig);
 
 	my $pid = open2(my($in, $out), @cmd);
