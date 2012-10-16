@@ -29,13 +29,9 @@ sub _discover_perl_interpreter {
 	my @potential_perls;
 
 	# Try 1, Check $^X for absolute path
-	push @potential_perls, $perl if File::Spec->file_name_is_absolute($perl);
+	push @potential_perls, File::Spec->file_name_is_absolute($perl) ? $perl : File::Spec->rel2abs($perl);
 
-	# Try 2, Check $^X for a valid relative path
-	my $abs_perl = File::Spec->rel2abs($perl);
-	push @potential_perls, $abs_perl;
-
-	# Try 3, Last ditch effort: These two option use hackery to try to locate
+	# Try 2, Last ditch effort: These two option use hackery to try to locate
 	# a suitable perl. The hack varies depending on whether we are running
 	# from an installed perl or an uninstalled perl in the perl source dist.
 	if ($ENV{PERL_CORE}) {
@@ -51,7 +47,7 @@ sub _discover_perl_interpreter {
 
 	}
 	else {
-		# Try 3.B, First look in $Config{perlpath}, then search the user's
+		# Try 2.B, First look in $Config{perlpath}, then search the user's
 		# PATH. We do not want to do either if we are running from an
 		# uninstalled perl in a perl source tree.
 
