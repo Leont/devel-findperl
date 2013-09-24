@@ -6,16 +6,16 @@ use Exporter 5.57 'import';
 our @EXPORT_OK = qw/find_perl_interpreter/;
 
 use Carp q/carp/;
+use Config;
 use Cwd q/realpath/;
-use ExtUtils::Config 0.007;
 use File::Basename qw/basename dirname/;
 use File::Spec::Functions qw/catfile catdir rel2abs file_name_is_absolute updir curdir path/;
 use IPC::Open2 qw/open2/;
 
 my %perl_for;
 sub find_perl_interpreter {
-	my $config = shift || ExtUtils::Config->new;
-	my $key = $config->serialize;
+	my $config = shift || 'Devel::FindPerl::Config';
+	my $key = $config->can('serialize') ? $config->serialize : '';
 	return $perl_for{$key} ||= _discover_perl_interpreter($config);
 }
 
@@ -118,6 +118,11 @@ sub _perl_is_same {
 	my $ret = do { local $/; <$in> };
 	waitpid $pid, 0;
 	return $ret eq Config->myconfig;
+}
+
+sub Devel::FindPerl::Config::get {
+	my ($self, $key) = @_;
+	return $Config{$key};
 }
 
 1;

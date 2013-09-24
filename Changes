@@ -1,6 +1,7 @@
 Revision history for Devel-FindPerl
 
 {{$NEXT}}
+          Soften dependency on ExtUtils::Config
 
 0.006     2012-10-21 15:32:06 Europe/Amsterdam
           Cache the results of find_perl_interpreter
