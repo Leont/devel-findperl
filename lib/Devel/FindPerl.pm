@@ -11,6 +11,7 @@ use Config;
 use Cwd q/realpath/;
 use File::Basename qw/basename dirname/;
 use File::Spec::Functions qw/catfile catdir rel2abs file_name_is_absolute updir curdir path/;
+use Scalar::Util 'tainted';
 use IPC::Open2 qw/open2/;
 
 my %perl_for;
@@ -30,7 +31,7 @@ sub _discover_perl_interpreter {
 	my @potential_perls;
 
 	# Try 1, Check $^X for absolute path
-	push @potential_perls, file_name_is_absolute($perl) ? $perl : rel2abs($perl);
+	push @potential_perls, file_name_is_absolute($perl) ? $perl : rel2abs($perl) unless tainted($perl);
 
 	# Try 2, Last ditch effort: These two option use hackery to try to locate
 	# a suitable perl. The hack varies depending on whether we are running
@@ -45,7 +46,6 @@ sub _discover_perl_interpreter {
 			my $uninstperl = rel2abs(catfile($perl_src, $perl_basename));
 			push @potential_perls, $uninstperl;
 		}
-
 	}
 	else {
 		# Try 2.B, First look in $Config{perlpath}, then search the user's
@@ -53,7 +53,7 @@ sub _discover_perl_interpreter {
 		# uninstalled perl in a perl source tree.
 
 		push @potential_perls, $config->get('perlpath');
-		push @potential_perls, map { catfile($_, $perl_basename) } path();
+		push @potential_perls, map { catfile($_, $perl_basename) } grep { !tainted($_) } path();
 	}
 
 	# Now that we've enumerated the potential perls, it's time to test
@@ -114,6 +114,7 @@ sub perl_is_same {
 	push @cmd, '-I' . catdir(dirname($perl), 'lib') if $ENV{PERL_CORE};
 	push @cmd, qw(-MConfig=myconfig -e print -e myconfig);
 
+	local $ENV{PATH} = '' if tainted($ENV{PATH});
 	my $pid = open2(my($in, $out), @cmd);
 	binmode $in, ':crlf' if $^O eq 'MSWin32';
 	my $ret = do { local $/; <$in> };
@@ -141,4 +142,8 @@ This function will try really really hard to find the path to the perl running y
 =func perl_is_same($path)
 
 Tests if the perl in C<$path> is the same perl as the currently running one.
+
+=head1 SECURITY
+
+This module by default does things that are not particularly secure (run programs based on external input). In tainted mode, it will try to avoid any insecure action, but that may affect its ability to find the perl executable.
 
