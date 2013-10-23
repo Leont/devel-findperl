@@ -131,6 +131,11 @@ sub Devel::FindPerl::Config::get {
 
 #ABSTRACT: Find the path to your perl
 
+=head1 SYNOPSIS
+
+ use Devel::FindPerl 'find_perl_interpreter';
+ system find_perl_interpreter, '-e', '...';
+
 =head1 DESCRIPTION
 
 This module tries to find the path to the currently running perl. It (optionally) exports the following functions:
