@@ -147,3 +147,22 @@ Tests if the perl in C<$path> is the same perl as the currently running one.
 
 This module by default does things that are not particularly secure (run programs based on external input). In tainted mode, it will try to avoid any insecure action, but that may affect its ability to find the perl executable.
 
+=head1 SEE ALSO
+
+=over 4
+
+=item * Probe::Perl
+
+This module has much the same purpose as Probe::Perl, in fact the algorithm is mostly the same as both are extracted from L<Module::Build> at different points in time. If I had known about it when I extracted it myself, I probably wouldn't have bothered, but now that I do have it there are a number of reasons for me to prefer Devel::FindPerl over Probe::Perl
+
+=over 4
+
+=item * Separation of concerns. P::P does 4 completely different things (finding perl, managing configuration, categorizing platorms and formatting a perl version. Devel::FindPerl is instead complemented by modules such as L<ExtUtils::Config> and L<Perl::OSType>.
+
+=item * It handles tainting better. In particular, C<find_perl_interpreter> never returns a tainted value, even in tainted mode.
+
+=item * It was written with inclusion in core in mind, though the removal of Module::Build from core after perl 5.20 may make this point moot.
+
+=back
+
+=back
