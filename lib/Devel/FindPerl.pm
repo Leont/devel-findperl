@@ -3,7 +3,8 @@ use strict;
 use warnings;
 
 use Exporter 5.57 'import';
-our @EXPORT_OK = qw/find_perl_interpreter/;
+our @EXPORT_OK = qw/find_perl_interpreter perl_is_same/;
+our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
 use Carp q/carp/;
 use Config;
@@ -61,7 +62,7 @@ sub _discover_perl_interpreter {
 	my $exe = $config->get('exe_ext');
 	foreach my $thisperl (@potential_perls) {
 		$thisperl .= $exe if length $exe and $thisperl !~ m/$exe$/i;
-		return $thisperl if -f $thisperl && _perl_is_same($thisperl);
+		return $thisperl if -f $thisperl && perl_is_same($thisperl);
 	}
 
 	# We've tried all alternatives, and didn't find a perl that matches
@@ -99,7 +100,7 @@ sub _perl_src {
 	return; # return empty string if $ENV{PERL_CORE} but can't find dir ???
 }
 
-sub _perl_is_same {
+sub perl_is_same {
 	my $perl = shift;
 
 	my @cmd = $perl;
@@ -131,9 +132,13 @@ sub Devel::FindPerl::Config::get {
 
 =head1 DESCRIPTION
 
-This module tries to find the path to the currently running perl.
+This module tries to find the path to the currently running perl. It (optionally) exports the following functions:
 
 =func find_perl_interpreter($config = ExtUtils::Config->new)
 
 This function will try really really hard to find the path to the perl running your program. I should be able to find it in most circumstances. Note that the result of this function will be cached for any serialized value of C<$config>.
+
+=func perl_is_same($path)
+
+Tests if the perl in C<$path> is the same perl as the currently running one.
 
