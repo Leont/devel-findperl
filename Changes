@@ -1,6 +1,8 @@
 Revision history for Devel-FindPerl
 
 {{$NEXT}}
+
+0.007     2013-10-24 14:32:54 Europe/Amsterdam
           Soften dependency on ExtUtils::Config
           Rewrite tests not to depend on Capture::Tiny
           Export perl_is_same
