@@ -114,7 +114,7 @@ sub perl_is_same {
 	push @cmd, '-I' . catdir(dirname($perl), 'lib') if $ENV{PERL_CORE};
 	push @cmd, qw(-MConfig=myconfig -e print -e myconfig);
 
-	local $ENV{PATH} = '' if tainted($ENV{PATH});
+	local $ENV{PATH} = '';
 	my $pid = open2(my($in, $out), @cmd);
 	binmode $in, ':crlf' if $^O eq 'MSWin32';
 	my $ret = do { local $/; <$in> };
