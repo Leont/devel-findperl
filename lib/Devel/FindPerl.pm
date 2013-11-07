@@ -24,14 +24,13 @@ sub find_perl_interpreter {
 sub _discover_perl_interpreter {
 	my $config = shift;
 
-	my $perl          = $^X;
-	return VMS::Filespec::vmsify($perl) if $^O eq 'VMS';
-	my $perl_basename = basename($perl);
+	return VMS::Filespec::vmsify($^X) if $^O eq 'VMS';
+	my $perl_basename = basename($^X);
 
 	my @potential_perls;
 
 	# Try 1, Check $^X for absolute path
-	push @potential_perls, file_name_is_absolute($perl) ? $perl : rel2abs($perl) unless tainted($perl);
+	push @potential_perls, file_name_is_absolute($^X) ? $^X : rel2abs($^X) unless tainted($^X);
 
 	# Try 2, Last ditch effort: These two option use hackery to try to locate
 	# a suitable perl. The hack varies depending on whether we are running
