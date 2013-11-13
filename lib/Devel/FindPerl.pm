@@ -139,9 +139,9 @@ This module tries to find the path to the currently running perl. It (optionally
 
 =func find_perl_interpreter($config = ExtUtils::Config->new)
 
-This function will try really really hard to find the path to the perl running your program. I should be able to find it in most circumstances. Note that the result of this function will be cached for any serialized value of C<$config>.
+This function will try really really hard to find the path to the perl running your program. I should be able to find it in most circumstances. Note that the result of this function will be cached for any serialized value of C<$config>. It will return a list that usually but not necessarily is containing one element; additional elements are arguments that must be passed to that perl for correct functioning.
 
-=func perl_is_same($path)
+=func perl_is_same($path, @arguments)
 
 Tests if the perl in C<$path> is the same perl as the currently running one.
 
