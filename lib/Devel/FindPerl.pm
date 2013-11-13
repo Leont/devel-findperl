@@ -116,7 +116,7 @@ sub perl_is_same {
 	binmode $in, ':crlf' if $^O eq 'MSWin32';
 	my $ret = do { local $/; <$in> };
 	waitpid $pid, 0;
-	return $ret eq Config->myconfig;
+	return lc $ret eq lc Config->myconfig;
 }
 
 sub Devel::FindPerl::Config::get {
