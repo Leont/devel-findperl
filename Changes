@@ -1,6 +1,7 @@
 Revision history for Devel-FindPerl
 
 {{$NEXT}}
+          Add a non-empty PATH, to make *bsd happy
 
 0.009     2013-11-07 23:00:55 Europe/Amsterdam
           find_perl_interpreter now return an array

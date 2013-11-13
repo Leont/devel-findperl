@@ -111,7 +111,7 @@ sub perl_is_same {
 
 	push @cmd, qw(-MConfig=myconfig -e print -e myconfig);
 
-	local $ENV{PATH} = '';
+	local $ENV{PATH} = join $Config{path_sep}, qw{/usr/bin /bin};
 	my $pid = open2(my($in, $out), @cmd);
 	binmode $in, ':crlf' if $^O eq 'MSWin32';
 	my $ret = do { local $/; <$in> };
