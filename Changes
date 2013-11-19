@@ -1,6 +1,7 @@
 Revision history for Devel-FindPerl
 
 {{$NEXT}}
+          Fix other environmental variables in tainted mode.
 
 0.010     2013-11-13 23:13:15 Europe/Amsterdam
           Add a non-empty PATH, to make *bsd happy
