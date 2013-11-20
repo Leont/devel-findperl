@@ -41,7 +41,7 @@ sub _discover_perl_interpreter {
 		# perl, we can keep moving up the directory tree until we find our
 		# binary. We wouldn't do this under any other circumstances.
 
-		my $perl_src = realpath(_perl_src());
+		my $perl_src = _perl_src();
 		if (defined($perl_src) && length($perl_src)) {
 			my $uninstperl = rel2abs(catfile($perl_src, $perl_basename));
 			# When run from the perl core, @INC will include the directories
@@ -103,7 +103,7 @@ sub _perl_src {
 	}
 
 	carp "PERL_CORE is set but I can't find your perl source!\n";
-	return; # return empty string if $ENV{PERL_CORE} but can't find dir ???
+	return;
 }
 
 sub perl_is_same {
