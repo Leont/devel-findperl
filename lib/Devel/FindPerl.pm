@@ -107,16 +107,19 @@ sub _perl_src {
 }
 
 sub perl_is_same {
-	my @cmd = @_;
+	my @perl = @_;
+	return lc _capture_command(@perl, qw(-MConfig=myconfig -e print -e myconfig)) eq lc Config->myconfig;
+}
 
-	push @cmd, qw(-MConfig=myconfig -e print -e myconfig);
+sub _capture_command {
+	my (@command) = @_;
 
-	local @ENV{qw/PATH IFS CDPATH ENV BASH_ENV/} = ('') x 5;
-	my $pid = open2(my($in, $out), @cmd);
+	local @ENV{qw/PATH IFS CDPATH ENV BASH_ENV/};
+	my $pid = open2(my($in, $out), @command);
 	binmode $in, ':crlf' if $^O eq 'MSWin32';
 	my $ret = do { local $/; <$in> };
 	waitpid $pid, 0;
-	return lc $ret eq lc Config->myconfig;
+	return $ret;
 }
 
 sub Devel::FindPerl::Config::get {
