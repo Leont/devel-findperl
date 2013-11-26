@@ -30,8 +30,8 @@ sub _discover_perl_interpreter {
 
 	my @potential_perls;
 
-	# Try 1, Check $^X for absolute path
-	push @potential_perls, [ file_name_is_absolute($^X) ? $^X : rel2abs($^X) ];
+	# Try 1, Check $^X for absolute and relative path
+	push @potential_perls, file_name_is_absolute($^X) ? [ $^X ] : length +(splitpath($^X))[1] ? [ rel2abs($^X) ] : ();
 
 	# Try 2, Last ditch effort: These two option use hackery to try to locate
 	# a suitable perl. The hack varies depending on whether we are running
