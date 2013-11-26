@@ -31,7 +31,7 @@ sub _discover_perl_interpreter {
 	my @potential_perls;
 
 	# Try 1, Check $^X for absolute path
-	push @potential_perls, [ file_name_is_absolute($^X) ? $^X : rel2abs($^X) ] unless tainted($^X);
+	push @potential_perls, [ file_name_is_absolute($^X) ? $^X : rel2abs($^X) ];
 
 	# Try 2, Last ditch effort: These two option use hackery to try to locate
 	# a suitable perl. The hack varies depending on whether we are running
@@ -59,8 +59,9 @@ sub _discover_perl_interpreter {
 		# uninstalled perl in a perl source tree.
 
 		push @potential_perls, [ $config->get('perlpath') ];
-		push @potential_perls, map { [ catfile($_, $perl_basename) ] } grep { !tainted($_) } path();
+		push @potential_perls, map { [ catfile($_, $perl_basename) ] } path();
 	}
+	@potential_perls = grep { !tainted($_->[0]) } @potential_perls;
 
 	# Now that we've enumerated the potential perls, it's time to test
 	# them to see if any of them match our configuration, returning the
