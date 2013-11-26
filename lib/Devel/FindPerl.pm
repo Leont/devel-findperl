@@ -43,14 +43,14 @@ sub _discover_perl_interpreter {
 
 		my $perl_src = _perl_src();
 		if (defined($perl_src) && length($perl_src)) {
-			my $uninstperl = rel2abs(catfile($perl_src, $perl_basename));
+			my $uninstperl = catfile($perl_src, $perl_basename);
 			# When run from the perl core, @INC will include the directories
 			# where perl is yet to be installed. We need to reference the
 			# absolute path within the source distribution where it can find
 			# it's Config.pm This also prevents us from picking up a Config.pm
 			# from a different configuration that happens to be already
 			# installed in @INC.
-			push @potential_perls, [ $uninstperl, '-I' . catdir(dirname($^X), 'lib') ];
+			push @potential_perls, [ $uninstperl, '-I' . catdir($perl_src, 'lib') ];
 		}
 	}
 	else {
