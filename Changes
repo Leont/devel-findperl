@@ -1,7 +1,7 @@
 Revision history for Devel-FindPerl
 
 {{$NEXT}}
-
+     Skip taint tests on portable Strawberry Perl.
 0.012     2013-11-20 14:57:15 Europe/Amsterdam
           Minor fixes in tests
 
