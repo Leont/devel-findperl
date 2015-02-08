@@ -11,6 +11,7 @@ use Devel::FindPerl qw/find_perl_interpreter perl_is_same/;
 my $perlpath = $Config{perlpath};
 plan(skip_all => 'Taint test can\'t be run from uninstalled perl') if $ENV{PERL_CORE};
 plan(skip_all => 'Taint test can\'t be run for relocatable perl') if $Config{userelocatableinc};
+plan(skip_all => 'Taint test can\'t be run for portable perl') if eval "require Portable";
 plan(skip_all => "Perl not in perlpath '$perlpath'") unless -x $perlpath and perl_is_same($perlpath);
 plan(skip_all => 'Testrun without taint mode') if not $^T;
 
