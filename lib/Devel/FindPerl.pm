@@ -104,7 +104,7 @@ sub _perl_src {
 	}
 
 	carp "PERL_CORE is set but I can't find your perl source!\n";
-	return;
+	return;\
 }
 
 sub perl_is_same {
