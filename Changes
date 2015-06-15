@@ -1,6 +1,7 @@
 Revision history for Devel-FindPerl
 
 {{$NEXT}}
+          Properly quote exe_ext in regexp
 
 0.013     2015-06-14 19:50:03+02:00 Europe/Amsterdam
           Skip taint test on portable perl
