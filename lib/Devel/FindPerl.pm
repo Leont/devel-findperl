@@ -68,7 +68,7 @@ sub _discover_perl_interpreter {
 	# absolute path of the first successful match.
 	my $exe = $config->get('exe_ext');
 	foreach my $thisperl (@potential_perls) {
-		$thisperl->[0] .= $exe if length $exe and $thisperl->[0] !~ m/\Q$exe$/i;
+		$thisperl->[0] .= $exe if length $exe and $thisperl->[0] !~ m/\Q$exe\E$/i;
 		return $thisperl if -f $thisperl->[0] && perl_is_same(@{$thisperl});
 	}
 
@@ -104,7 +104,7 @@ sub _perl_src {
 	}
 
 	carp "PERL_CORE is set but I can't find your perl source!\n";
-	return;
+	return;\
 }
 
 sub perl_is_same {
