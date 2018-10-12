@@ -10,7 +10,7 @@ use Carp q/carp/;
 use Config;
 use Cwd q/realpath/;
 use File::Basename qw/basename dirname/;
-use File::Spec::Functions qw/catfile catdir rel2abs file_name_is_absolute updir curdir path/;
+use File::Spec::Functions qw/catfile catdir rel2abs file_name_is_absolute updir curdir path splitpath/;
 use Scalar::Util 'tainted';
 use IPC::Open2 qw/open2/;
 
